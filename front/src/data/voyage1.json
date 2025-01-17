@@ -1,0 +1,33 @@
+{
+    "days": [
+      {
+        "day": 1,
+        "locations": [
+          {
+            "name": "Musée du Louvre",
+            "position": [48.8606, 2.3376],
+            "description": "Un célèbre musée d'art à Paris.",
+            "arrival": "09:00",
+            "departure": "12:00",
+            "photos": ["https://example.com/louvre.jpg"]
+          },
+          {
+            "name": "Tour Eiffel",
+            "position": [48.8584, 2.2945],
+            "description": "La célèbre tour de Paris.",
+            "arrival": "14:00",
+            "departure": "17:00",
+            "photos": ["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/520px-Tour_Eiffel_Wikimedia_Commons.jpg"]
+          }
+        ],
+        "routes": [
+          {
+            "mode": "walking",
+            "time": "30 min",
+            "distance": "2.5 km",
+            "positions": [[48.8606, 2.3376], [48.8584, 2.2945]]
+          }
+        ]
+      }
+    ]
+  }
