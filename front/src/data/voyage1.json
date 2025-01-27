@@ -1,33 +1,45 @@
 {
-    "days": [
-      {
-        "day": 1,
-        "locations": [
-          {
-            "name": "Musée du Louvre",
-            "position": [48.8606, 2.3376],
-            "description": "Un célèbre musée d'art à Paris.",
-            "arrival": "09:00",
-            "departure": "12:00",
-            "photos": ["https://example.com/louvre.jpg"]
-          },
-          {
-            "name": "Tour Eiffel",
-            "position": [48.8584, 2.2945],
-            "description": "La célèbre tour de Paris.",
-            "arrival": "14:00",
-            "departure": "17:00",
-            "photos": ["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/520px-Tour_Eiffel_Wikimedia_Commons.jpg"]
-          }
-        ],
-        "routes": [
-          {
-            "mode": "walking",
-            "time": "30 min",
-            "distance": "2.5 km",
-            "positions": [[48.8606, 2.3376], [48.8584, 2.2945]]
-          }
-        ]
-      }
-    ]
-  }
+  "days": [
+    {
+      "day": 1,
+      "locations": [
+        {
+          "name": "Musée du Louvre",
+          "position": [48.8606, 2.3376],
+          "description": "Un célèbre musée d'art à Paris.",
+          "photos": ["https://example.com/louvre.jpg"],
+          "arrival": "09:00",
+          "departure": "12:00"
+        },
+        {
+          "name": "Tour Eiffel",
+          "position": [48.8584, 2.2945],
+          "description": "La célèbre tour de Paris.",
+          "photos": ["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/520px-Tour_Eiffel_Wikimedia_Commons.jpg"],
+          "arrival": "14:00",
+          "departure": "17:00"
+        },
+        {
+          "name": "Cathédrale Notre-Dame",
+          "position": [48.8529, 2.3500],
+          "description": "Une célèbre cathédrale gothique à Paris.",
+          "photos": ["https://example.com/notre-dame.jpg"],
+          "arrival": "17:30",
+          "departure": "19:00"
+        }
+      ],
+      "routes": [
+        {
+          "startIndex": 1,
+          "endIndex": 0,
+          "mode": "driving-car"
+        },
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "mode": "foot-walking"
+        }
+      ]
+    }
+  ]
+}

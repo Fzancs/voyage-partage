@@ -1,22 +1,18 @@
 import React from "react";
 
-const RouteInfo = ({ routes = [] }) => {
+const RouteInfo = ({ routes }) => {
   return (
     <div className="route-info">
       <h2>Informations sur les itinéraires</h2>
-      {routes.length > 0 ? (
-        routes.map((route, index) => (
-          <div key={index}>
-            <p>
-              <strong>Mode :</strong> {route.mode === "walking" ? "Piéton" : "Voiture"} <br />
-              <strong>Temps :</strong> {route.time} <br />
-              <strong>Distance :</strong> {route.distance}
-            </p>
-          </div>
-        ))
-      ) : (
-        <p>Aucun itinéraire disponible pour ce jour.</p>
-      )}
+      {routes.map((route, index) => (
+        <div key={index}>
+          <p>
+            <strong>Mode :</strong> {route.mode === "foot-walking" ? "Piéton" : "Voiture"} <br />
+            <strong>Distance :</strong> {route.distance} km <br />
+            <strong>Durée :</strong> {route.duration} min
+          </p>
+        </div>
+      ))}
     </div>
   );
 };

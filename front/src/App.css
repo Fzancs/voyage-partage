@@ -1,0 +1,28 @@
+/* Conteneur global */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  /* Layout de la carte et de RouteInfo */
+  .map-layout {
+    display: flex;
+    flex: 1; /* Prend tout l'espace disponible en hauteur */
+  }
+  
+  /* Styles pour RouteInfo */
+  .route-info {
+    width: 300px; /* Largeur fixe pour RouteInfo */
+    padding: 10px;
+    background-color: #f8f9fa; /* Couleur de fond */
+    border-right: 1px solid #ddd; /* Ligne de séparation */
+    overflow-y: auto; /* Permet le défilement si le contenu est long */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Styles pour la carte */
+  .leaflet-container {
+    flex: 1; /* La carte prend le reste de l'espace disponible */
+    height: 100%; /* S'assure que la carte occupe toute la hauteur */
+  }

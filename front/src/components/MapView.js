@@ -12,45 +12,52 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
-const MapView = ({ locations = [] }) => {
+const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
   const [calculatedRoutes, setCalculatedRoutes] = useState([]);
 
-  const fetchRoute = async (start, end) => {
+  const fetchRoute = async (start, end, mode) => {
     const apiKey = "5b3ce3597851110001cf62487d5b6c20d2b746178b3c00b91fc16ba6";
-    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
+    const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${apiKey}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
 
     try {
       const response = await axios.get(url);
-      const geometry = response.data.features[0].geometry.coordinates;
+      const route = response.data.features[0];
+      const geometry = route.geometry.coordinates;
+      const distance = route.properties.segments[0].distance; // Distance en mètres
+      const duration = route.properties.segments[0].duration; // Durée en secondes
 
-      // Convertir les coordonnées [lon, lat] en [lat, lon] pour Leaflet
-      const routeCoordinates = geometry.map((coord) => [coord[1], coord[0]]);
-      return routeCoordinates;
+      return {
+        coordinates: geometry.map((coord) => [coord[1], coord[0]]),
+        distance: (distance / 1000).toFixed(2), // Convertir en km
+        duration: Math.ceil(duration / 60), // Convertir en minutes
+        mode,
+      };
     } catch (error) {
       console.error("Erreur lors de la récupération de l'itinéraire :", error);
-      return [];
+      return { coordinates: [], distance: 0, duration: 0, mode };
     }
   };
 
   useEffect(() => {
     const calculateRoutes = async () => {
       const allRoutes = [];
-      for (let i = 0; i < locations.length - 1; i++) {
-        const start = locations[i].position;
-        const end = locations[i + 1].position;
-        const route = await fetchRoute(start, end);
-        allRoutes.push(route);
+      for (const route of routes) {
+        const start = locations[route.startIndex].position;
+        const end = locations[route.endIndex].position;
+        const result = await fetchRoute(start, end, route.mode);
+        allRoutes.push(result);
       }
       setCalculatedRoutes(allRoutes);
+      onRoutesCalculated(allRoutes); // Transmettre les infos calculées au composant parent
     };
 
-    if (locations.length > 1) {
+    if (locations.length > 1 && routes.length > 0) {
       calculateRoutes();
     }
-  }, [locations]);
+  }, [locations, routes, onRoutesCalculated]);
 
   return (
-    <MapContainer center={[48.8566, 2.3522]} zoom={13} style={{ height: "80vh", width: "100%" }}>
+    <MapContainer center={locations[0].position} zoom={13} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -66,13 +73,34 @@ const MapView = ({ locations = [] }) => {
             <h3>{loc.name}</h3>
             <p>{loc.description}</p>
             <p>Arrivée : {loc.arrival} <br /> Départ : {loc.departure}</p>
+            {loc.photos && loc.photos.map((photo, idx) => (
+              <img
+                key={idx}
+                src={photo}
+                alt={loc.name}
+                style={{ width: "100%", height: "auto", marginBottom: "10px", cursor: "pointer" }}
+                onClick={() => window.open(photo, "_blank")}
+              />
+            ))}
           </Popup>
         </Marker>
       ))}
 
       {/* Afficher les itinéraires */}
       {calculatedRoutes.map((route, index) => (
-        <Polyline key={index} positions={route} color="blue" />
+        <Polyline
+          key={index}
+          positions={route.coordinates}
+          color={route.mode === "foot-walking" ? "blue" : "red"}
+        >
+          <Popup>
+            <p>
+              <strong>Mode :</strong> {route.mode === "foot-walking" ? "Piéton" : "Voiture"} <br />
+              <strong>Distance :</strong> {route.distance} km <br />
+              <strong>Durée :</strong> {route.duration} min
+            </p>
+          </Popup>
+        </Polyline>
       ))}
     </MapContainer>
   );
