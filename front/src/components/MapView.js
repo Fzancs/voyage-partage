@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import axios from "axios";
@@ -12,8 +12,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
-const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
+const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} }) => {
   const [calculatedRoutes, setCalculatedRoutes] = useState([]);
+  const routeCache = useRef({}); // Utilisez un cache persistant avec useRef
 
   const fetchRoute = async (start, end, mode) => {
     const apiKey = "5b3ce3597851110001cf62487d5b6c20d2b746178b3c00b91fc16ba6";
@@ -27,7 +28,7 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
       const duration = route.properties.segments[0].duration; // Durée en secondes
 
       return {
-        coordinates: geometry.map((coord) => [coord[1], coord[0]]),
+        coordinates: geometry.map((coord) => [coord[1], coord[0]]), // Convertir [lon, lat] en [lat, lon]
         distance: (distance / 1000).toFixed(2), // Convertir en km
         duration: Math.ceil(duration / 60), // Convertir en minutes
         mode,
@@ -40,6 +41,15 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
 
   useEffect(() => {
     const calculateRoutes = async () => {
+      const cacheKey = JSON.stringify({ locations, routes }); // Créez une clé unique pour le cache
+      if (routeCache.current[cacheKey]) {
+        // Si les données sont dans le cache, les utiliser
+        const cachedRoutes = routeCache.current[cacheKey];
+        setCalculatedRoutes(cachedRoutes);
+        onRoutesCalculated(cachedRoutes);
+        return;
+      }
+
       const allRoutes = [];
       for (const route of routes) {
         const start = locations[route.startIndex].position;
@@ -47,8 +57,11 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
         const result = await fetchRoute(start, end, route.mode);
         allRoutes.push(result);
       }
+
+      // Stockez les itinéraires dans le cache
+      routeCache.current[cacheKey] = allRoutes;
       setCalculatedRoutes(allRoutes);
-      onRoutesCalculated(allRoutes); // Transmettre les infos calculées au composant parent
+      onRoutesCalculated(allRoutes);
     };
 
     if (locations.length > 1 && routes.length > 0) {
@@ -57,7 +70,7 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
   }, [locations, routes, onRoutesCalculated]);
 
   return (
-    <MapContainer center={locations[0].position} zoom={13} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={locations[0]?.position || [0, 0]} zoom={13} style={{ height: "80vh", width: "100%" }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -73,15 +86,16 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
             <h3>{loc.name}</h3>
             <p>{loc.description}</p>
             <p>Arrivée : {loc.arrival} <br /> Départ : {loc.departure}</p>
-            {loc.photos && loc.photos.map((photo, idx) => (
-              <img
-                key={idx}
-                src={photo}
-                alt={loc.name}
-                style={{ width: "100%", height: "auto", marginBottom: "10px", cursor: "pointer" }}
-                onClick={() => window.open(photo, "_blank")}
-              />
-            ))}
+            {loc.photos &&
+              loc.photos.map((photo, idx) => (
+                <img
+                  key={idx}
+                  src={photo}
+                  alt={loc.name}
+                  style={{ width: "100%", height: "auto", marginBottom: "10px", cursor: "pointer" }}
+                  onClick={() => window.open(photo, "_blank")} // Ouvrir l'image en grand dans un nouvel onglet
+                />
+              ))}
           </Popup>
         </Marker>
       ))}
@@ -91,7 +105,7 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated }) => {
         <Polyline
           key={index}
           positions={route.coordinates}
-          color={route.mode === "foot-walking" ? "blue" : "red"}
+          color={route.mode === "foot-walking" ? "blue" : "red"} // Différencier les itinéraires par mode
         >
           <Popup>
             <p>

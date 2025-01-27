@@ -1,28 +1,39 @@
-/* Conteneur global */
 .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  
-  /* Layout de la carte et de RouteInfo */
-  .map-layout {
-    display: flex;
-    flex: 1; /* Prend tout l'espace disponible en hauteur */
-  }
-  
-  /* Styles pour RouteInfo */
-  .route-info {
-    width: 300px; /* Largeur fixe pour RouteInfo */
-    padding: 10px;
-    background-color: #f8f9fa; /* Couleur de fond */
-    border-right: 1px solid #ddd; /* Ligne de séparation */
-    overflow-y: auto; /* Permet le défilement si le contenu est long */
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Styles pour la carte */
-  .leaflet-container {
-    flex: 1; /* La carte prend le reste de l'espace disponible */
-    height: 100%; /* S'assure que la carte occupe toute la hauteur */
-  }
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.map-layout {
+  display: flex;
+  flex: 1;
+}
+
+.navigation-panel {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:disabled {
+  background-color: #eee;
+  cursor: not-allowed;
+}
+
+.route-info {
+  width: 300px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
