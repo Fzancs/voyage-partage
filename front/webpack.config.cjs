@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const DotenvWebpack = require('dotenv-webpack');
 
 module.exports = {
   entry: './src/index.js',
@@ -15,7 +16,7 @@ module.exports = {
         use: 'babel-loader'
       },
       {
-        test: /\.css$/,  // Ajout du support CSS
+        test: /\.css$/,
         use: ['style-loader', 'css-loader']
       }
     ]
@@ -32,6 +33,9 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'public/index.html',
+    }),
+    new DotenvWebpack({
+      path: path.resolve(__dirname, '../.env'),
     }),
   ],
 };

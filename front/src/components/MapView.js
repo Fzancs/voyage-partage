@@ -17,7 +17,7 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
   const routeCache = useRef({}); // Utilisez un cache persistant avec useRef
 
   const fetchRoute = async (start, end, mode) => {
-    const apiKey = "5b3ce3597851110001cf62487d5b6c20d2b746178b3c00b91fc16ba6";
+    const apiKey = process.env.OPEN_ROUTE_SERVICE_API_KEY;
     const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${apiKey}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
 
     try {

@@ -1,0 +1,16 @@
+{
+    "name": "voyage-partage",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+      "back",
+      "front"
+    ],
+    "scripts": {
+      "install-all": "npm install",
+      "start-back": "npm start --workspace back",
+      "start-front": "npm start --workspace front",
+      "add-data": "node back/scripts/addData.js"
+    }
+  }
+  
