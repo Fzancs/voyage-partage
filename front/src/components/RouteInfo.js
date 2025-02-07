@@ -13,6 +13,10 @@ const RouteInfo = ({ routes }) => {
           </p>
         </div>
       ))}
+      <div className="legend">
+        <span style={{ color: "blue" }}>■ A pied</span>
+        <span style={{ color: "red", marginLeft: "10px" }}>■ En voiture</span>
+      </div>
     </div>
   );
 };

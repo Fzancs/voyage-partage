@@ -70,7 +70,7 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
   }, [locations, routes, onRoutesCalculated]);
 
   return (
-    <MapContainer center={locations[0]?.position || [0, 0]} zoom={13} style={{ height: "80vh", width: "100%" }}>
+    <MapContainer center={locations[0]?.position || [0, 0]} zoom={13} style={{ height: "100vh", width: "100%" }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
