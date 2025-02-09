@@ -2,10 +2,21 @@ import React, { useState } from "react";
 
 const RouteInfo = ({ routes, locations, calculatedRoutes }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [currentPointIndex, setCurrentPointIndex] = useState(0);
 
   const firstLocation = locations[routes[0]?.startIndex] || {};
   const lastLocation = locations[routes[routes.length - 1]?.endIndex] || {};
   const totalDuration = calculatedRoutes.reduce((sum, route) => sum + (route.duration || 0), 0);
+
+  const currentLocation = locations[currentPointIndex] || {};
+
+  const handlePreviousPoint = () => {
+    setCurrentPointIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : locations.length - 1));
+  };
+
+  const handleNextPoint = () => {
+    setCurrentPointIndex((prevIndex) => (prevIndex < locations.length - 1 ? prevIndex + 1 : 0));
+  };
 
   return (
     <div className="route-info-container">
@@ -20,6 +31,26 @@ const RouteInfo = ({ routes, locations, calculatedRoutes }) => {
         <button onClick={() => setShowDetails(!showDetails)}>
           {showDetails ? "Masquer les détails" : "Afficher les détails"}
         </button>
+        {/* Images des points avec le nom du lieu */}
+        <br />
+        <div className="point-image-container">
+          <h3 className="point-name">{currentLocation.name || "Lieu non défini"}</h3>
+          {currentLocation.photos && currentLocation.photos.length > 0 ? (
+            <img
+              src={currentLocation.photos[0]}
+              alt={currentLocation.name}
+              className="point-image"
+            />
+          ) : (
+            <p>Aucune image disponible pour ce point</p>
+          )}
+        </div>
+
+        {/* Navigation entre les points */}
+        <div className="point-navigation">
+          <button onClick={handlePreviousPoint}>Précédent</button>
+          <button onClick={handleNextPoint}>Suivant</button>
+        </div>
       </div>
 
       {showDetails && (

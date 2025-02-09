@@ -214,6 +214,36 @@ button:disabled {
   background-color: red;
 }
 
+/* RouteInfo image */
+
+.point-image-container {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.point-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.point-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.point-navigation button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.point-navigation button:hover {
+  background-color: grey;
+}
+
 
 
 /* NavigationPanel styles */
