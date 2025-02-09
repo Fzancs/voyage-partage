@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
 
 const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} }) => {
   const [calculatedRoutes, setCalculatedRoutes] = useState([]);
-  const routeCache = useRef({}); // Utilisez un cache persistant avec useRef
+  const routeCache = useRef({});
 
   const fetchRoute = async (start, end, mode) => {
     const apiKey = process.env.OPEN_ROUTE_SERVICE_API_KEY;
@@ -24,13 +24,13 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
       const response = await axios.get(url);
       const route = response.data.features[0];
       const geometry = route.geometry.coordinates;
-      const distance = route.properties.segments[0].distance; // Distance en mètres
-      const duration = route.properties.segments[0].duration; // Durée en secondes
+      const distance = route.properties.segments[0].distance;
+      const duration = route.properties.segments[0].duration;
 
       return {
-        coordinates: geometry.map((coord) => [coord[1], coord[0]]), // Convertir [lon, lat] en [lat, lon]
-        distance: (distance / 1000).toFixed(2), // Convertir en km
-        duration: Math.ceil(duration / 60), // Convertir en minutes
+        coordinates: geometry.map((coord) => [coord[1], coord[0]]),
+        distance: (distance / 1000).toFixed(2),
+        duration: Math.ceil(duration / 60),
         mode,
       };
     } catch (error) {
@@ -41,9 +41,8 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
 
   useEffect(() => {
     const calculateRoutes = async () => {
-      const cacheKey = JSON.stringify({ locations, routes }); // Créez une clé unique pour le cache
+      const cacheKey = JSON.stringify({ locations, routes });
       if (routeCache.current[cacheKey]) {
-        // Si les données sont dans le cache, les utiliser
         const cachedRoutes = routeCache.current[cacheKey];
         setCalculatedRoutes(cachedRoutes);
         onRoutesCalculated(cachedRoutes);
@@ -58,7 +57,6 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
         allRoutes.push(result);
       }
 
-      // Stockez les itinéraires dans le cache
       routeCache.current[cacheKey] = allRoutes;
       setCalculatedRoutes(allRoutes);
       onRoutesCalculated(allRoutes);
@@ -70,53 +68,65 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
   }, [locations, routes, onRoutesCalculated]);
 
   return (
-    <MapContainer center={locations[0]?.position || [0, 0]} zoom={13} style={{ height: "100vh", width: "100%" }}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div className="map-view">
+      <MapContainer center={locations[0]?.position || [0, 0]} zoom={13} style={{ height: "100%", width: "100%" }}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      {/* Afficher les marqueurs */}
-      {locations.map((loc, index) => (
-        <Marker key={index} position={loc.position}>
-          <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent>
-            {loc.name}
-          </Tooltip>
-          <Popup>
-            <h3>{loc.name}</h3>
-            <p>{loc.description}</p>
-            <p>Arrivée : {loc.arrival} <br /> Départ : {loc.departure}</p>
-            {loc.photos &&
-              loc.photos.map((photo, idx) => (
-                <img
-                  key={idx}
-                  src={photo}
-                  alt={loc.name}
-                  style={{ width: "100%", height: "auto", marginBottom: "10px", cursor: "pointer" }}
-                  onClick={() => window.open(photo, "_blank")} // Ouvrir l'image en grand dans un nouvel onglet
-                />
-              ))}
-          </Popup>
-        </Marker>
-      ))}
+        {/* Afficher les marqueurs */}
+        {locations.map((loc, index) => (
+          <Marker key={index} position={loc.position}>
+            <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent>
+              {loc.name}
+            </Tooltip>
+            <Popup>
+              <h3>{loc.name}</h3>
+              <p>{loc.description}</p>
+              <p>Arrivée : {loc.arrival} <br /> Départ : {loc.departure}</p>
+              {loc.photos &&
+                loc.photos.map((photo, idx) => (
+                  <img
+                    key={idx}
+                    src={photo}
+                    alt={loc.name}
+                    style={{ width: "100%", height: "auto", marginBottom: "10px", cursor: "pointer" }}
+                    onClick={() => window.open(photo, "_blank")}
+                  />
+                ))}
+            </Popup>
+          </Marker>
+        ))}
 
-      {/* Afficher les itinéraires */}
-      {calculatedRoutes.map((route, index) => (
-        <Polyline
-          key={index}
-          positions={route.coordinates}
-          color={route.mode === "foot-walking" ? "blue" : "red"} // Différencier les itinéraires par mode
-        >
-          <Popup>
-            <p>
-              <strong>Mode :</strong> {route.mode === "foot-walking" ? "Piéton" : "Voiture"} <br />
-              <strong>Distance :</strong> {route.distance} km <br />
-              <strong>Durée :</strong> {route.duration} min
-            </p>
-          </Popup>
-        </Polyline>
-      ))}
-    </MapContainer>
+        {/* Afficher les itinéraires */}
+        {calculatedRoutes.map((route, index) => (
+          <Polyline
+            key={index}
+            positions={route.coordinates}
+            color={route.mode === "foot-walking" ? "blue" : "red"}
+            dashArray={route.mode === "foot-walking" ? "5, 5" : "0, 0"}
+          >
+            <Popup>
+              <p>
+                <strong>Mode :</strong> {route.mode === "foot-walking" ? "Piéton" : "Voiture"} <br />
+                <strong>Distance :</strong> {route.distance} km <br />
+                <strong>Durée :</strong> {route.duration} min
+              </p>
+            </Popup>
+          </Polyline>
+        ))}
+      </MapContainer>
+
+      {/* Légende en bas à droite */}
+      <div className="route-legend">
+      <span className="legend-foot">
+      A pied<span className="dashed-line"></span>
+      </span>
+      <span style={{ color: "red", marginLeft: "10px" }}>■ </span> En voiture
+      </div>
+
+    </div>
   );
 };
 
