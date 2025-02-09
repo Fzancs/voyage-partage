@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const voyagesRoutes = require('./routes/voyages');
-const locationsRoutes = require('./routes/locations');
 const cors = require('cors');
 
 const app = express();
@@ -10,7 +9,6 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api/voyages', voyagesRoutes);
-app.use('/api/locations', locationsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Voyage Partage API!' });
