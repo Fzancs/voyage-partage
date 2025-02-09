@@ -258,3 +258,42 @@ button:disabled {
 .navigation-panel span {
   font-size: 14px;
 }
+
+
+/* */
+
+.navigation-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.voyage-selector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  margin-left: 8px;
+}
+
+#voyage-select {
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.day-navigation {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  justify-content: center;
+  flex: 2;
+}
+
+.spacer {
+  flex: 1; /* Espace de remplissage à droite */
+}

@@ -6,20 +6,45 @@ import "leaflet/dist/leaflet.css";
 import "./App.css";
 
 const App = () => {
+  const [voyages, setVoyages] = useState([]); // Liste des voyages récupérés depuis l'API
+  const [currentVoyage, setCurrentVoyage] = useState(null); // Voyage actuel
   const [currentDay, setCurrentDay] = useState(1); // Jour actuel
   const [dayData, setDayData] = useState(null); // Données récupérées pour le jour actuel
   const [calculatedRoutesInfo, setCalculatedRoutesInfo] = useState([]); // Stocker les itinéraires calculés
   const [loading, setLoading] = useState(true); // Indicateur de chargement
   const [error, setError] = useState(null); // Gestion des erreurs
 
-  // Charger les données dynamiquement depuis l'API
+  // Charger la liste des voyages au montage
   useEffect(() => {
+    const fetchVoyages = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/voyages`);
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+
+        const voyagesData = await response.json();
+        setVoyages(voyagesData);
+        setCurrentVoyage(voyagesData[0]?.id || null); // Sélectionner le premier voyage par défaut
+      } catch (err) {
+        console.error("Erreur lors de la récupération des voyages :", err);
+        setError("Impossible de charger la liste des voyages.");
+      }
+    };
+
+    fetchVoyages();
+  }, []);
+
+  // Charger les données du jour sélectionné pour le voyage actuel
+  useEffect(() => {
+    if (!currentVoyage) return;
+
     const fetchDayData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await fetch(`http://localhost:3000/api/voyages/1/days/${currentDay}`);
+        const response = await fetch(`http://localhost:3000/api/voyages/${currentVoyage}/days/${currentDay}`);
         if (!response.ok) {
           throw new Error(`Erreur HTTP : ${response.status}`);
         }
@@ -35,7 +60,10 @@ const App = () => {
     };
 
     fetchDayData();
-  }, [currentDay]);
+  }, [currentVoyage, currentDay]);
+
+  // Trouver le nombre total de jours pour le voyage actuel
+  const totalDays = voyages.find((voyage) => voyage.id === currentVoyage)?.totalDays || 1;
 
   // Gestion des états de chargement et d'erreur
   if (loading) return <div>Chargement des données...</div>;
@@ -44,14 +72,21 @@ const App = () => {
 
   return (
     <div className="app-container">
+      {/* Navigation avec sélection du voyage */}
       <NavigationPanel
         currentDay={currentDay}
-        totalDays={3}
+        totalDays={totalDays} // Utiliser le nombre correct de jours
         onDayChange={setCurrentDay}
+        currentVoyage={currentVoyage}
+        voyages={voyages}
+        onVoyageChange={(voyageId) => {
+          setCurrentVoyage(voyageId);
+          setCurrentDay(1); // Réinitialiser au premier jour du nouveau voyage
+        }}
       />
 
+      {/* Affichage de la carte et des itinéraires */}
       <div className="map-layout">
-        {/* Transmission des données complètes */}
         <RouteInfo 
           routes={dayData.routes} 
           locations={dayData.locations} 

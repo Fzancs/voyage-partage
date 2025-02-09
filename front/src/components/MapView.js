@@ -12,52 +12,109 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
+const CACHE_KEY = "routeCacheData";
+
+const loadCache = () => {
+  try {
+    const cacheData = localStorage.getItem(CACHE_KEY);
+    return cacheData ? JSON.parse(cacheData) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveCache = (cache) => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    console.error("Erreur lors de la sauvegarde du cache.");
+  }
+};
+
 const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} }) => {
   const [calculatedRoutes, setCalculatedRoutes] = useState([]);
-  const routeCache = useRef({});
+  const routeCache = useRef(loadCache()); // Charger le cache depuis localStorage
+  const pendingRequests = useRef({}); // Suivi des requêtes en cours
 
   const fetchRoute = async (start, end, mode) => {
+    const cacheKey = JSON.stringify({ start, end, mode });
+
+    // Vérification dans le cache
+    if (routeCache.current[cacheKey]) {
+      console.log("Utilisation du cache pour :", cacheKey);
+      return routeCache.current[cacheKey];
+    }
+
+    // Vérification si une requête est déjà en cours pour cette route
+    if (pendingRequests.current[cacheKey]) {
+      console.log("Requête en cours pour :", cacheKey);
+      return pendingRequests.current[cacheKey];
+    }
+
+    // Créer une nouvelle requête
     const apiKey = process.env.OPEN_ROUTE_SERVICE_API_KEY;
     const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${apiKey}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
 
-    try {
-      const response = await axios.get(url);
+    const routePromise = axios.get(url).then((response) => {
       const route = response.data.features[0];
       const geometry = route.geometry.coordinates;
       const distance = route.properties.segments[0].distance;
       const duration = route.properties.segments[0].duration;
 
-      return {
+      const routeData = {
         coordinates: geometry.map((coord) => [coord[1], coord[0]]),
         distance: (distance / 1000).toFixed(2),
         duration: Math.ceil(duration / 60),
         mode,
+        color: mode === "foot-walking" ? "blue" : "red", // Ajout de la couleur ici
+        dashArray: mode === "foot-walking" ? "5, 5" : "0, 0", // Ajout du style ici
       };
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'itinéraire :", error);
-      return { coordinates: [], distance: 0, duration: 0, mode };
-    }
+
+      // Stockage dans le cache et sauvegarde
+      routeCache.current[cacheKey] = routeData;
+      saveCache(routeCache.current);
+      delete pendingRequests.current[cacheKey]; // Nettoyer la requête en cours
+      return routeData;
+    });
+
+    pendingRequests.current[cacheKey] = routePromise; // Ajouter la promesse dans les requêtes en cours
+    return routePromise;
   };
 
   useEffect(() => {
     const calculateRoutes = async () => {
       const cacheKey = JSON.stringify({ locations, routes });
+
+      // Vérifier si l'ensemble des routes est déjà en cache
       if (routeCache.current[cacheKey]) {
-        const cachedRoutes = routeCache.current[cacheKey];
-        setCalculatedRoutes(cachedRoutes);
-        onRoutesCalculated(cachedRoutes);
+        console.log("Utilisation du cache global pour les routes.");
+        setCalculatedRoutes(routeCache.current[cacheKey]);
+        onRoutesCalculated(routeCache.current[cacheKey]);
         return;
       }
 
       const allRoutes = [];
+      const seenRoutes = new Set();
+
       for (const route of routes) {
-        const start = locations[route.startIndex].position;
-        const end = locations[route.endIndex].position;
-        const result = await fetchRoute(start, end, route.mode);
-        allRoutes.push(result);
+        const start = locations[route.startIndex]?.position;
+        const end = locations[route.endIndex]?.position;
+
+        if (start && end) {
+          const routeKey = `${start.join(",")}-${end.join(",")}-${route.mode}`;
+
+          // Éviter de recalculer le même itinéraire
+          if (!seenRoutes.has(routeKey)) {
+            seenRoutes.add(routeKey);
+            const result = await fetchRoute(start, end, route.mode);
+            allRoutes.push(result);
+          }
+        }
       }
 
+      // Stocker les itinéraires complets en cache et sauvegarde
       routeCache.current[cacheKey] = allRoutes;
+      saveCache(routeCache.current);
       setCalculatedRoutes(allRoutes);
       onRoutesCalculated(allRoutes);
     };
@@ -104,8 +161,8 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
           <Polyline
             key={index}
             positions={route.coordinates}
-            color={route.mode === "foot-walking" ? "blue" : "red"}
-            dashArray={route.mode === "foot-walking" ? "5, 5" : "0, 0"}
+            color={route.color} // Utilisation de la couleur mise en cache
+            dashArray={route.dashArray} // Utilisation du style de ligne
           >
             <Popup>
               <p>
@@ -120,12 +177,11 @@ const MapView = ({ locations = [], routes = [], onRoutesCalculated = () => {} })
 
       {/* Légende en bas à droite */}
       <div className="route-legend">
-      <span className="legend-foot">
-      A pied<span className="dashed-line"></span>
-      </span>
-      <span style={{ color: "red", marginLeft: "10px" }}>■ </span> En voiture
+        <span className="legend-foot">
+          A pied<span className="dashed-line"></span>
+        </span>
+        <span style={{ color: "red", marginLeft: "10px" }}>■ </span> En voiture
       </div>
-
     </div>
   );
 };

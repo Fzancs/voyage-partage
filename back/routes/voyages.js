@@ -4,6 +4,7 @@ const pool = require('../db');
 
 const router = express.Router();
 
+// Endpoint pour récupérer les informations d'un jour spécifique
 router.get(
   '/:voyageId/days/:day',
   [
@@ -69,9 +70,9 @@ router.get(
 
       // Renvoyer la réponse finale
       res.json({
-          day: parseInt(day, 10),
-          locations,
-          routes
+        day: parseInt(day, 10),
+        locations,
+        routes
       });
     } catch (error) {
       console.error(error);
@@ -79,5 +80,32 @@ router.get(
     }
   }
 );
+
+// Endpoint pour récupérer la liste des voyages
+router.get('/', async (req, res) => {
+  try {
+    const voyagesQuery = `
+      SELECT v.id, v.name, COUNT(d.id) AS total_days
+      FROM voyages v
+      LEFT JOIN days d ON v.id = d.voyage_id
+      GROUP BY v.id, v.name
+      ORDER BY v.id ASC;
+    `;
+
+    const result = await pool.query(voyagesQuery);
+
+    // Transformation des données pour renvoyer une liste de voyages avec leur nombre total de jours
+    const voyages = result.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      totalDays: parseInt(row.total_days, 10)
+    }));
+
+    res.json(voyages);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+});
 
 module.exports = router;
