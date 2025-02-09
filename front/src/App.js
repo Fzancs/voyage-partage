@@ -51,7 +51,12 @@ const App = () => {
       />
 
       <div className="map-layout">
-        <RouteInfo routes={calculatedRoutesInfo} />
+        {/* Transmission des données complètes */}
+        <RouteInfo 
+          routes={dayData.routes} 
+          locations={dayData.locations} 
+          calculatedRoutes={calculatedRoutesInfo}
+        />
         <MapView
           locations={dayData.locations || []}
           routes={dayData.routes || []}
