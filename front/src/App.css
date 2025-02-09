@@ -76,11 +76,7 @@ button:disabled {
   height: 0;
 }
 
-
-
 /* RouteInfo styles */
-
-/* Conteneur principal */
 .route-info-container {
   display: flex;
   position: relative;
@@ -222,8 +218,8 @@ button:disabled {
 }
 
 .point-image {
-  width: 100%;
-  max-height: 300px;
+  width: 300px;
+  height: 270px;
   object-fit: cover;
   border-radius: 10px;
 }
@@ -244,8 +240,6 @@ button:disabled {
   background-color: grey;
 }
 
-
-
 /* NavigationPanel styles */
 
 .navigation-panel {
@@ -258,9 +252,6 @@ button:disabled {
 .navigation-panel span {
   font-size: 14px;
 }
-
-
-/* */
 
 .navigation-panel {
   display: flex;
